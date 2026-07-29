@@ -134,7 +134,7 @@ const TagTable = () => {
                     }}
                     scroll={{
                         x: 'max-content',
-                        y: 'calc(100vh - 260px)',
+                        y: 'calc(100vh - 280px)',
                     }}
                 />
             </div>

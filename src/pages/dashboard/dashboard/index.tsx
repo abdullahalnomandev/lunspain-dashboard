@@ -1,114 +1,106 @@
-
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Area, AreaChart, Legend } from 'recharts';
-import {  Select } from 'antd';
+import { Select } from 'antd';
+import { useGetDashboardOverviewQuery } from '../../../redux/apiSlices/userSlice';
+import { useGetTopClubsQuery } from '../../../redux/apiSlices/clubSlice';
+import { imageUrl } from '../../../redux/api/baseApi';
 
 export default function Dashboard() {
+    // TODO: Replace with actual data from the API
+    const { data: dashboardOverview } = useGetDashboardOverviewQuery({ year: new Date().getFullYear() });
+    const { data: topClubsData } = useGetTopClubsQuery();
+    console.log(dashboardOverview);
 
-    const activeUsersData = [
-        { month: 'Jan', '2024': 45, '2025': 60 },
-        { month: 'Feb', '2024': 52, '2025': 75 },
-        { month: 'Mar', '2024': 48, '2025': 70 },
-        { month: 'Apr', '2024': 61, '2025': 82 },
-        { month: 'May', '2024': 55, '2025': 68 },
-        { month: 'Jun', '2024': 67, '2025': 85 },
-        { month: 'Jul', '2024': 72, '2025': 90 },
-        { month: 'Aug', '2024': 58, '2025': 75 },
-        { month: 'Sep', '2024': 64, '2025': 80 },
-        { month: 'Oct', '2024': 70, '2025': 88 },
-        { month: 'Nov', '2024': 59, '2025': 76 },
-        { month: 'Dec', '2024': 66, '2025': 83 }
+    const activeUsersData = dashboardOverview?.data?.userRegistrationsPerMonth ?? [
+        { month: 'Jan', '2025': 10, '2026': 20 },
+        { month: 'Feb', '2025': 15, '2026': 25 },
+        { month: 'Mar', '2025': 20, '2026': 30 },
+        { month: 'Apr', '2025': 25, '2026': 35 },
+        { month: 'May', '2025': 30, '2026': 40 },
+        { month: 'Jun', '2025': 35, '2026': 45 },
+        { month: 'Jul', '2025': 40, '2026': 50 },
+        { month: 'Aug', '2025': 45, '2026': 55 },
+        { month: 'Sep', '2025': 50, '2026': 60 },
+        { month: 'Oct', '2025': 55, '2026': 65 },
+        { month: 'Nov', '2025': 60, '2026': 70 },
+        { month: 'Dec', '2025': 65, '2026': 75 },
     ];
 
-    const topClubs = [
-        { id: 1, name: 'Rhythm Nation', members: 203, avatar: '🎵' },
-        { id: 2, name: 'Rhythm Nation', members: 180, avatar: '🎵' },
-        { id: 3, name: 'Rhythm Nation', members: 205, avatar: '🎵' },
-        { id: 4, name: 'Rhythm Nation', members: 203, avatar: '🎵' },
-        { id: 5, name: 'Groove Masters', members: 175, avatar: '🥁' },
-        { id: 6, name: 'Dance Floor Crew', members: 188, avatar: '🕺' },
-        { id: 7, name: 'Jazz Fusion', members: 160, avatar: '🎷' },
-        { id: 8, name: 'The Beat Collective', members: 192, avatar: '🔊' }
-    ];
 
     const statCards = [
-        { label: 'Total Revenue', value: '$2500', color: 'bg-[#F8E5FF99]', icon: '/card1.png' },
-        { label: 'Total User', value: '11,250', color: 'bg-[#E9F0FF]', icon: '/card2.png' },
-        { label: 'Total Club', value: '1,459', color: 'bg-[#F8E5FF99]', icon: '/card3.png' },
-        { label: 'Active Classes', value: '6,428', color: 'bg-[#FDF9EC]', icon: '/card3.png' }
+        {
+            label: 'Total Revenue',
+            value: dashboardOverview?.data?.totalRevenue ?? 0,
+            color: 'bg-[#F8E5FF99]',
+            icon: '/card1.png',
+        },
+        {
+            label: 'Total User',
+            value: dashboardOverview?.data?.totalUsers ?? 0,
+            color: 'bg-[#E9F0FF]',
+            icon: '/card2.png',
+        },
+        {
+            label: 'Total Club',
+            value: dashboardOverview?.data?.totalClubs ?? 0,
+            color: 'bg-[#F8E5FF99]',
+            icon: '/card3.png',
+        },
+        {
+            label: 'Active Classes',
+            value: dashboardOverview?.data?.totalActiveClasses ?? 0,
+            color: 'bg-[#FDF9EC]',
+            icon: '/card3.png',
+        },
     ];
 
-    const revenueData = [
+    const revenueData = dashboardOverview?.data?.monthlyRevenue ?? [
         {
             month: 'Jan',
-            revenue: 4000,
-            pv: 2400,
-            amt: 2400,
+            earning: 1000,
         },
         {
             month: 'Feb',
-            revenue: 3000,
-            pv: 1398,
-            amt: 2210,
+            earning: 1500,
         },
         {
             month: 'Mar',
-            revenue: 2000,
-            pv: 9800,
-            amt: 2290,
+            earning: 2000,
         },
         {
             month: 'Apr',
-            revenue: 2780,
-            pv: 3908,
-            amt: 2000,
+            earning: 2500,
         },
         {
             month: 'May',
-            revenue: 1890,
-            pv: 4800,
-            amt: 2181,
+            earning: 3000,
         },
         {
             month: 'Jun',
-            revenue: 2390,
-            pv: 3800,
-            amt: 2500,
+            earning: 3500,
         },
         {
             month: 'Jul',
-            revenue: 3490,
-            pv: 4300,
-            amt: 2100,
+            earning: 4000,
         },
         {
             month: 'Aug',
-            revenue: 3200,
-            pv: 4100,
-            amt: 2300,
+            earning: 4500,
         },
         {
             month: 'Sep',
-            revenue: 3100,
-            pv: 3900,
-            amt: 2250,
+            earning: 5000,
         },
         {
             month: 'Oct',
-            revenue: 3000,
-            pv: 3700,
-            amt: 2400,
+            earning: 5500,
         },
         {
             month: 'Nov',
-            revenue: 2800,
-            pv: 3600,
-            amt: 2185,
+            earning: 6000,
         },
         {
             month: 'Dec',
-            revenue: 2600,
-            pv: 3500,
-            amt: 2000,
+            earning: 6500,
         },
     ];
 
@@ -186,28 +178,22 @@ export default function Dashboard() {
                         <Tooltip
                             content={({ active, payload, label }) => {
                                 if (active && payload && payload.length) {
-                                    let year = "2025";
+                                    let year = '2025';
                                     return (
-                                        <div className="bg-[#986EA8]  bg-linear-to-r from-cyan-[#986EA8] px-3 rounded shadow text-sm text-white ">
+                                        <div className="bg-[#986EA8] bg-linear-to-r from-cyan-[#986EA8] px-3 rounded shadow text-sm text-white ">
                                             <div>
-                                                <span className="text-lg">${payload[0].value}</span>
+                                                <span className="text-lg">${payload[0].payload.earning}</span>
                                             </div>
-                                            <div className="mb-1  ">
-                                                2 {label} {year}
+                                            <div className="mb-1">
+                                                {label} {year}
                                             </div>
-
                                         </div>
                                     );
                                 }
                                 return null;
                             }}
                         />
-                        <Area
-                            type="monotone"
-                            dataKey="revenue"
-                            stroke="#986EA8"
-                            fill="url(#revenueGradient)"
-                        />
+                        <Area type="monotone" dataKey="earning" stroke="#986EA8" fill="url(#revenueGradient)" />
                         <defs>
                             <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="0%" stopColor="#7c5fe6" stopOpacity={0.32} />
@@ -241,19 +227,24 @@ export default function Dashboard() {
                                 stroke="#9ca3af"
                                 tick={{
                                     // @ts-ignore
-                                    angle:-30,
+                                    angle: -30,
                                     textAnchor: 'end',
                                     fontSize: 14,
-                                    fill: "#9ca3af"
+                                    fill: '#9ca3af',
                                 }}
                                 height={50}
                             />
                             <YAxis stroke="#9ca3af" />
-                            <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }} />
-                            <Bar dataKey="2024" fill="#8979FF" />
-                            <Bar dataKey="2025" fill="#B6E2D3" />
+                            <Tooltip
+                                contentStyle={{
+                                    backgroundColor: '#fff',
+                                    border: '1px solid #e5e7eb',
+                                    borderRadius: '8px',
+                                }}
+                            />
+                            <Bar dataKey="2025" fill="#8979FF" />
+                            <Bar dataKey="2026" fill="#B6E2D3" />
                             <Legend verticalAlign="top" align="right" />
-
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -262,12 +253,33 @@ export default function Dashboard() {
                 <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
                     <h2 className="text-lg font-bold text-gray-900 mb-6">Top Clubs</h2>
                     <div className=" max-h-80 overflow-y-auto">
-                        {topClubs.map((club, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50  border-b-gray-100  border-b rounded-lg transition">
+                        {((topClubsData as any)?.data || [])?.map((club: any, idx: number) => (
+                            <div
+                                key={idx}
+                                className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50  border-b-gray-100  border-b rounded-lg transition"
+                            >
                                 <div className="flex items-center gap-3">
                                     <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-200 overflow-hidden">
-             
-                                        <span className="text-2xl">{club.avatar}</span>
+                                        <span className="text-2xl">
+                                            {club.image ? (
+                                                <img
+                                                    src={imageUrl + club.image}
+                                                    alt={club.name}
+                                                    className="w-12 h-12 object-cover rounded-full"
+                                                />
+                                            ) : (
+                                                <span className="text-2xl bg-gray-300 text-gray-500 rounded-full w-10 h-10 flex items-center justify-center">
+                                                    {club.name
+                                                        ? club.name
+                                                              .split(' ')
+                                                              .map((w: string) => w.charAt(0))
+                                                              .join('')
+                                                              .substring(0, 2)
+                                                              .toUpperCase()
+                                                        : 'C'}
+                                                </span>
+                                            )}
+                                        </span>
                                     </div>
                                     <div>
                                         <p className="font-medium text-gray-900 text-[15px]">{club.name}</p>
@@ -277,9 +289,21 @@ export default function Dashboard() {
                                 <div className="flex items-center gap-2">
                                     {/* Members avatars */}
                                     <div className="flex -space-x-2">
-                                        <img src="https://randomuser.me/api/portraits/men/31.jpg" className="w-7 h-7 rounded-full border-2 border-white object-cover" alt="avatar1" />
-                                        <img src="https://randomuser.me/api/portraits/women/42.jpg" className="w-7 h-7 rounded-full border-2 border-white object-cover" alt="avatar2" />
-                                        <img src="https://randomuser.me/api/portraits/men/49.jpg" className="w-7 h-7 rounded-full border-2 border-white object-cover" alt="avatar3" />
+                                        <img
+                                            src="https://randomuser.me/api/portraits/men/31.jpg"
+                                            className="w-7 h-7 rounded-full border-2 border-white object-cover"
+                                            alt="avatar1"
+                                        />
+                                        <img
+                                            src="https://randomuser.me/api/portraits/women/42.jpg"
+                                            className="w-7 h-7 rounded-full border-2 border-white object-cover"
+                                            alt="avatar2"
+                                        />
+                                        <img
+                                            src="https://randomuser.me/api/portraits/men/49.jpg"
+                                            className="w-7 h-7 rounded-full border-2 border-white object-cover"
+                                            alt="avatar3"
+                                        />
                                     </div>
                                     <span className="font-semibold text-gray-500 text-sm">+{club.members}</span>
                                 </div>

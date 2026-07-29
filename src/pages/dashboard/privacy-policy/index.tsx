@@ -1,14 +1,20 @@
-import { useState } from "react";
-import NoteTab from "../../../components/shared/NoteTab";
+import SettingsEditor from '../../../components/shared/SettingsEditor';
+import {
+    useGetPrivacyPolicySettingsQuery,
+    useUpdatePrivacyPolicySettingsMutation,
+} from '../../../redux/apiSlices/privacyPolicySettingsSlice';
 
 export default function PrivacyPolicy() {
-    const [conten,setContent] = useState('');
-  return (
-    <div>
-      <NoteTab
-      content={conten}
-      handleContentChange={setContent}
-      />
-    </div>
-  )
+    const { data, isLoading } = useGetPrivacyPolicySettingsQuery();
+    const [updatePrivacyPolicySettings, { isLoading: isSaving }] = useUpdatePrivacyPolicySettingsMutation();
+
+    return (
+        <SettingsEditor
+            title="Privacy Policy"
+            data={data}
+            isLoading={isLoading}
+            isSaving={isSaving}
+            onSave={(payload) => updatePrivacyPolicySettings(payload).unwrap()}
+        />
+    );
 }

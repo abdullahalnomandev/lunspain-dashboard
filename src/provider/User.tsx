@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useProfileQuery } from '../redux/apiSlices/authSlice';
+import { useProfileQuery, PROFILE_QUERY_ARG } from '../redux/apiSlices/authSlice';
 
 type User = {
   email: string;
@@ -14,7 +14,7 @@ export const UserContext = React.createContext<User | null>(null);
 
 export const UserProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
     const [user, setUser] = useState<User | null>(null);
-    const { data } = useProfileQuery({});
+    const { data } = useProfileQuery(PROFILE_QUERY_ARG);
     const profile = data?.data as User; // assert type if your API returns this
 
     useEffect(() => {

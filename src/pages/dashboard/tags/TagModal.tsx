@@ -1,9 +1,9 @@
-import { Button, Form, Input, Modal, Select } from 'antd';
+import { Button, Form, Input, Modal } from 'antd';
 import { useEffect } from 'react';
 import Swal from 'sweetalert2';
 import {
     useCreateTagMutation,
-    useGetCategoriesQuery,
+    // useGetCategoriesQuery,
     useUpdateTagMutation,
 } from '../../../redux/apiSlices/tagSlice';
 import { ITag } from '../../../types/types';
@@ -21,15 +21,15 @@ const getCategoryId = (category: ITag['category']) => {
 
 export default function TagModal({ isOpen, onClose, selectedTag }: TagModalProps) {
     const [form] = Form.useForm();
-    const { data: categories } = useGetCategoriesQuery({});
+    // const { data: categories } = useGetCategoriesQuery({});
     const [createTag, { isLoading: isCreating }] = useCreateTagMutation();
     const [updateTag, { isLoading: isUpdating }] = useUpdateTagMutation();
 
-    const categoryOptions =
-        categories?.data?.map((category: { _id: string; name: string }) => ({
-            value: category._id,
-            label: category.name,
-        })) || [];
+    // const categoryOptions =
+    //     categories?.data?.map((category: { _id: string; name: string }) => ({
+    //         value: category._id,
+    //         label: category.name,
+    //     })) || [];
 
     useEffect(() => {
         if (selectedTag) {

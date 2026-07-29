@@ -172,7 +172,7 @@ const UserTable = () => {
                     }}
                     scroll={{
                         x: 'max-content',
-                        y: 'calc(100vh - 210px)',
+                        y: 'calc(100vh - 230px)',
                     }}
                     // Optional: Add a customTable class if using CSS module styles
                     // className={styles.customTable}

@@ -27,6 +27,15 @@ const userSlice = api.injectEndpoints({
                 };
             },
         }),
+
+        // New endpoint for dashboard overview with year as query param
+        getDashboardOverview: builder.query({
+            query: ({ year }: { year: string | number }) => ({
+                url: '/user/overview',
+                method: 'GET',
+                params: { year },
+            }),
+        }),
     }),
 });
-export const { useGetUsersQuery, useChangeStatusUserMutation, useGetHostsQuery } = userSlice;
+export const { useGetUsersQuery, useChangeStatusUserMutation, useGetHostsQuery, useGetDashboardOverviewQuery } = userSlice;

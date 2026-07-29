@@ -17,6 +17,30 @@ export interface IAnalatycs {
 }
 
 
+export interface IUserProfile {
+  _id?: string;
+  firstName?: string;
+  lastName?: string;
+  date_of_birth?: string;
+  country?: string;
+  skills?: string[];
+  year_of_exprience?: string;
+  level_of_experience?: string;
+  image?: string;
+  cover_image?: string;
+  username?: string;
+}
+
+export interface IAuthUser {
+  _id: string;
+  profile: IUserProfile;
+  email: string;
+  role: string;
+  status: 'active' | 'delete';
+  verified: boolean;
+  auth_provider: 'local' | 'google' | 'apple';
+}
+
 export interface IUser {
   _id: string;
   name: string;
@@ -134,6 +158,7 @@ export interface IClub {
   allow_class_cancelation?: boolean;
   club_members?: number;
   total_members?: number;
+  group_role?: string;
   image?: string;
   cover_image?: string;
   managers?: IClubManager[];
@@ -152,6 +177,39 @@ export interface IClub {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface IClass {
+  _id: string;
+  club?: string;
+  creator?: string;
+  class_status?: string;
+  class_name?: string;
+  date_of_class?: string;
+  start_time?: string;
+  duration?: string;
+  const_per_ticket?: number;
+  max_number_of_attendees?: number;
+  remaining_space?: number;
+  booking_status?: string;
+  delete_class?: boolean;
+}
+
+export interface IClubClassesData {
+  userCredit?: number;
+  today?: IClass[];
+  thisWeek?: IClass[];
+  nextWeek?: IClass[];
+  afterNextWeek?: IClass[];
+}
+
+export interface ISetting {
+  description: string;
+  _id?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type SettingPayload = Pick<ISetting, 'description'>;
 
 export interface INotification {
   _id: string;

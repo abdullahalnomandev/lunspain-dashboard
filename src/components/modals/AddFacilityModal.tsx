@@ -2,8 +2,8 @@ import { Button, Form, Input, Modal } from "antd";
 import {useState } from "react";
 import { PiImageThin } from "react-icons/pi";
 import { useCreateFacilityMutation } from "../../redux/apiSlices/facilitySlice";
-import { errorType } from "../../pages/authentication/Login";
 import Swal from "sweetalert2";
+import { errorType } from "../../pages/authentication/VerifyOtp";
 
 const AddFacilityModal = ({ isOpen, setIsOpen }: {
     isOpen: boolean;

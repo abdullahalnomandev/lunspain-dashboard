@@ -1,62 +1,66 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { EyeInvisibleOutlined, EyeOutlined, CameraOutlined } from '@ant-design/icons';
-import { Tabs, Button, Input, message, Avatar, Form } from 'antd';
+import { Tabs, Button, Input, message, Avatar, Form, Skeleton } from 'antd';
+import {
+  useProfileQuery,
+  useUpdateProfileMutation,
+  useChangePasswordMutation,
+  PROFILE_QUERY_ARG,
+} from '../../../redux/apiSlices/authSlice';
+import { imageUrl } from '../../../redux/api/baseApi';
+import { IAuthUser } from '../../../types/types';
 
-// JSON input describing form fields for both profile and password change
 const profileFormFields = [
   {
-    name: 'name',
-    label: 'Name',
-    placeholder: 'Enter your name',
-    rules: [{ required: true, message: 'Please enter your name!' }]
+    name: 'firstName',
+    label: 'First Name',
+    placeholder: 'Enter your first name',
+    rules: [{ required: true, message: 'Please enter your first name!' }]
+  },
+  {
+    name: 'lastName',
+    label: 'Last Name',
+    placeholder: 'Enter your last name',
+    rules: [{ required: true, message: 'Please enter your last name!' }]
   },
   {
     name: 'email',
     label: 'Email',
     placeholder: 'Enter your email',
+    disabled: true,
     rules: [
       { required: true, message: 'Please enter your email!' },
       { type: 'email', message: 'Please enter a valid email!' }
-    ]
-  },
-  {
-    name: 'contact',
-    label: 'Contact No',
-    placeholder: 'Enter your contact number',
-    rules: [
-      { required: true, message: 'Please enter your contact number!' },
-      { pattern: /^[\d+\-\s()]+$/, message: 'Please enter a valid contact number!' }
     ]
   }
 ];
 
 const passwordFormFields = [
   {
-    name: 'current',
+    name: 'currentPassword',
     label: 'Current Password',
     placeholder: 'Enter current password',
     rules: [{ required: true, message: 'Please enter your current password!' }],
     type: 'password'
   },
   {
-    name: 'new',
+    name: 'newPassword',
     label: 'New Password',
     placeholder: 'Enter new password',
     rules: [{ required: true, message: 'Please enter your new password!' }],
     type: 'password'
   },
   {
-    name: 'confirm',
+    name: 'confirmPassword',
     label: 'Confirm New Password',
     placeholder: 'Confirm new password',
-    dependencies: ['new'],
+    dependencies: ['newPassword'],
     type: 'password',
     rules: [
       { required: true, message: 'Please confirm your new password!' },
-      // Custom validator for passwords match
       ({ getFieldValue }: any) => ({
         validator(_: any, value: string) {
-          if (!value || getFieldValue('new') === value) {
+          if (!value || getFieldValue('newPassword') === value) {
             return Promise.resolve();
           }
           return Promise.reject(new Error('Passwords do not match!'));
@@ -66,54 +70,114 @@ const passwordFormFields = [
   }
 ];
 
+type ProfileFormValues = {
+  firstName: string;
+  lastName: string;
+  email: string;
+};
+
+type PasswordFormValues = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};
+
+const getProfileImage = (image?: string) => {
+  if (!image) return 'https://i.ibb.co/z5YHLV9/profile.png';
+  if (image.startsWith('https')) return image;
+  return imageUrl + image;
+};
+
 export default function Profile() {
   const [activeTab, setActiveTab] = useState('1');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [showPasswords, setShowPasswords] = useState({
-    current: false,
-    new: false,
-    confirm: false
+    currentPassword: false,
+    newPassword: false,
+    confirmPassword: false
   });
 
-  // Initial values for the forms
-  const initialProfileValues = {
-    name: 'Abdullah Al Noman',
-    email: 'abdullahalnoman1512@gmail.com',
-    contact: '+99 3487 4985'
-  };
-  const initialPasswordValues = { current: '', new: '', confirm: '' };
+  const [profileForm] = Form.useForm<ProfileFormValues>();
+  const [passwordForm] = Form.useForm<PasswordFormValues>();
 
-  // Form Handlers
-  const handleProfileSubmit = (values: typeof initialProfileValues) => {
-    console.log(values)
-    // TODO: Submit form values to backend as needed
-    console.log(values);
-    
-    message.success('Profile updated successfully!');
-  };
+  const { data: profileResponse, isLoading: isProfileLoading } = useProfileQuery(PROFILE_QUERY_ARG);
+  const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
+  const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
 
-  const handlePasswordSubmit = (values: typeof initialPasswordValues) => {
-    if (values.new !== values.confirm) {
-      message.error('New passwords do not match!');
-      return;
+  const profile = profileResponse?.data as IAuthUser | undefined;
+
+  useEffect(() => {
+    if (!profile) return;
+
+    profileForm.setFieldsValue({
+      firstName: profile.profile?.firstName || '',
+      lastName: profile.profile?.lastName || '',
+      email: profile.email || '',
+    });
+  }, [profile, profileForm]);
+
+  const handleProfileSubmit = async (values: ProfileFormValues) => {
+    const formData = new FormData();
+    formData.append('firstName', values.firstName);
+    formData.append('lastName', values.lastName);
+
+    if (imageFile) {
+      formData.append('image', imageFile, imageFile.name);
     }
-    message.success('Password changed successfully!');
+
+    try {
+      await updateProfile(formData).unwrap();
+
+      message.success('Profile updated successfully!');
+      setImageFile(null);
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+      setImagePreview(undefined);
+    } catch (error: any) {
+      const errorMessage = error?.data?.message || error?.error || 'Failed to update profile!';
+      message.error(errorMessage);
+    }
   };
 
-  // Toggle password field visibility
-  const togglePasswordVisibility = (field: 'current' | 'new' | 'confirm') => {
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    event.target.value = '';
+  };
+
+  // Pass confirmPassword in the body to changePassword mutation
+  const handlePasswordSubmit = async (values: PasswordFormValues) => {
+    try {
+      await changePassword({
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+        confirmPassword: values.confirmPassword,
+      }).unwrap();
+
+      message.success('Password changed successfully!');
+      passwordForm.resetFields();
+    } catch (error: any) {
+      const errorMessage = error?.data?.message || error?.error || 'Failed to change password!';
+      message.error(errorMessage);
+    }
+  };
+
+  const togglePasswordVisibility = (field: 'currentPassword' | 'newPassword' | 'confirmPassword') => {
     setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }));
   };
 
-  // Helper to render fields from JSON
   const renderFields = (
     fields: typeof profileFormFields | typeof passwordFormFields,
-    isPassword?: boolean,
-    values?: any
+    isPassword?: boolean
   ) =>
     fields.map((field: any) => {
-      console.log(values)
       if (isPassword) {
-        // For password fields, show/hide based on toggle
         return (
           <Form.Item
             key={field.name}
@@ -136,7 +200,7 @@ export default function Profile() {
               />
               <span
                 className="absolute right-3 top-3 cursor-pointer text-gray-500 hover:text-gray-700"
-                onClick={() => togglePasswordVisibility(field.name as 'current' | 'new' | 'confirm')}
+                onClick={() => togglePasswordVisibility(field.name as 'currentPassword' | 'newPassword' | 'confirmPassword')}
               >
                 {showPasswords[field.name as keyof typeof showPasswords] ? (
                   <EyeOutlined className="text-lg" />
@@ -148,7 +212,7 @@ export default function Profile() {
           </Form.Item>
         );
       }
-      // For profile fields
+
       return (
         <Form.Item
           key={field.name}
@@ -162,13 +226,15 @@ export default function Profile() {
             size="large"
             placeholder={field.placeholder}
             className="rounded-lg"
+            disabled={field.disabled}
             autoComplete={field.name === 'email' ? 'email' : undefined}
           />
         </Form.Item>
       );
     });
 
-  // Tab configuration
+  const profileImage = imagePreview || getProfileImage(profile?.profile?.image);
+
   const tabItems = [
     {
       key: '1',
@@ -176,37 +242,58 @@ export default function Profile() {
       children: (
         <div className="space-y-6">
           <div className="flex flex-col items-center ">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
             <div className="relative">
-              <Avatar
-                size={120}
-                src="https://noman1.netlify.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2FAbdullah_Al_Noman.c5d6012f.jpg&w=640&q=75"
-                className="border-4 border-teal-50"
-              />
-              <div className="absolute bottom-0 right-0 bg-teal-500 rounded-full p-2 cursor-pointer hover:bg-teal-600 transition">
+              {isProfileLoading ? (
+                <Skeleton.Avatar active size={120} />
+              ) : (
+                <Avatar
+                  size={120}
+                  src={profileImage}
+                  className="border-4 border-teal-50"
+                />
+              )}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute bottom-0 right-0 bg-teal-500 rounded-full p-2 cursor-pointer hover:bg-teal-600 transition border-0"
+                aria-label="Upload profile image"
+              >
                 <CameraOutlined className="text-white text-lg" />
-              </div>
+              </button>
             </div>
           </div>
-          <Form
-            name="profileForm"
-            layout="vertical"
-            initialValues={initialProfileValues}
-            onFinish={handleProfileSubmit}
-            requiredMark={false}
-          >
-            {renderFields(profileFormFields)}
-            <Form.Item>
-              <Button
-                type="primary"
-                size="large"
-                block
-                htmlType="submit"
-                className="bg-teal-500 hover:bg-teal-600 rounded-lg h-10 text-base font-semibold"
-              >
-                Save Changes
-              </Button>
-            </Form.Item>
-          </Form>
+          {isProfileLoading ? (
+            <Skeleton active paragraph={{ rows: 4 }} />
+          ) : (
+            <Form
+              form={profileForm}
+              name="profileForm"
+              layout="vertical"
+              onFinish={handleProfileSubmit}
+              requiredMark={false}
+            >
+              {renderFields(profileFormFields)}
+              <Form.Item>
+                <Button
+                  type="primary"
+                  size="large"
+                  block
+                  htmlType="submit"
+                  loading={isUpdatingProfile}
+                  className="bg-teal-500 hover:bg-teal-600 rounded-lg h-10 text-base font-semibold"
+                >
+                  Save Changes
+                </Button>
+              </Form.Item>
+            </Form>
+          )}
         </div>
       )
     },
@@ -216,9 +303,9 @@ export default function Profile() {
       children: (
         <div className="space-y-6">
           <Form
+            form={passwordForm}
             name="passwordForm"
             layout="vertical"
-            initialValues={initialPasswordValues}
             onFinish={handlePasswordSubmit}
             requiredMark={false}
           >
@@ -229,6 +316,7 @@ export default function Profile() {
                 size="large"
                 block
                 htmlType="submit"
+                loading={isChangingPassword}
                 className="bg-teal-500 hover:bg-teal-600 rounded-lg h-12 text-base font-semibold"
               >
                 Save Changes
