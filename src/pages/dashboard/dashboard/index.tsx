@@ -3,28 +3,20 @@ import { Select } from 'antd';
 import { useGetDashboardOverviewQuery } from '../../../redux/apiSlices/userSlice';
 import { useGetTopClubsQuery } from '../../../redux/apiSlices/clubSlice';
 import { imageUrl } from '../../../redux/api/baseApi';
+import { useState } from 'react';
 
 export default function Dashboard() {
-    // TODO: Replace with actual data from the API
-    const { data: dashboardOverview } = useGetDashboardOverviewQuery({ year: new Date().getFullYear() });
+    const currentYear = new Date().getFullYear();
+
+    const [selectedYear, setSelectedYear] = useState(currentYear);
+
+    const { data: dashboardOverview } = useGetDashboardOverviewQuery({
+        year: selectedYear,
+    });
+
     const { data: topClubsData } = useGetTopClubsQuery();
-    console.log(dashboardOverview);
 
-    const activeUsersData = dashboardOverview?.data?.userRegistrationsPerMonth ?? [
-        { month: 'Jan', '2025': 10, '2026': 20 },
-        { month: 'Feb', '2025': 15, '2026': 25 },
-        { month: 'Mar', '2025': 20, '2026': 30 },
-        { month: 'Apr', '2025': 25, '2026': 35 },
-        { month: 'May', '2025': 30, '2026': 40 },
-        { month: 'Jun', '2025': 35, '2026': 45 },
-        { month: 'Jul', '2025': 40, '2026': 50 },
-        { month: 'Aug', '2025': 45, '2026': 55 },
-        { month: 'Sep', '2025': 50, '2026': 60 },
-        { month: 'Oct', '2025': 55, '2026': 65 },
-        { month: 'Nov', '2025': 60, '2026': 70 },
-        { month: 'Dec', '2025': 65, '2026': 75 },
-    ];
-
+    const activeUsersData = dashboardOverview?.data?.userRegistrationsPerMonth;
 
     const statCards = [
         {
@@ -53,83 +45,24 @@ export default function Dashboard() {
         },
     ];
 
-    const revenueData = dashboardOverview?.data?.monthlyRevenue ?? [
-        {
-            month: 'Jan',
-            earning: 1000,
-        },
-        {
-            month: 'Feb',
-            earning: 1500,
-        },
-        {
-            month: 'Mar',
-            earning: 2000,
-        },
-        {
-            month: 'Apr',
-            earning: 2500,
-        },
-        {
-            month: 'May',
-            earning: 3000,
-        },
-        {
-            month: 'Jun',
-            earning: 3500,
-        },
-        {
-            month: 'Jul',
-            earning: 4000,
-        },
-        {
-            month: 'Aug',
-            earning: 4500,
-        },
-        {
-            month: 'Sep',
-            earning: 5000,
-        },
-        {
-            month: 'Oct',
-            earning: 5500,
-        },
-        {
-            month: 'Nov',
-            earning: 6000,
-        },
-        {
-            month: 'Dec',
-            earning: 6500,
-        },
+    const revenueData = dashboardOverview?.data?.revenuePerMonthResult ?? [
+        { month: 'Jan', earning: 0 },
+        { month: 'Feb', earning: 0 },
+        { month: 'Mar', earning: 0 },
+        { month: 'Apr', earning: 0 },
+        { month: 'May', earning: 0 },
+        { month: 'Jun', earning: 0 },
+        { month: 'Jul', earning: 0 },
+        { month: 'Aug', earning: 0 },
+        { month: 'Sep', earning: 0 },
+        { month: 'Oct', earning: 0 },
+        { month: 'Nov', earning: 0 },
+        { month: 'Dec', earning: 110 },
     ];
+    console.log('revenueData', revenueData);
 
     return (
         <div style={{ width: '100%' }}>
-            {/* Date Picker Custom UI */}
-            {/* <div className="flex justify-end items-center mb-6">
-                <div className="flex items-center  border-gray-200 bg-white rounded-sm  text-[#505B6B] shadow-sm overflow-hidden" style={{ width: 250 }}>
-                    <DatePicker
-                        value={selectedDate}
-                        onChange={handleChange}
-                        format="DD MMM, YYYY"
-                        allowClear={false}
-                        className="flex-1 !m-0 border-none !p-0 !pl-2 cursor-pointer shadow-none outline-none !bg-transparent  select-none text-[#505B6B]"
-                        suffixIcon={
-                            <span className="bg-[#986EA8]  flex items-center justify-center  w-[36px] h-[36px]">
-                                <FaRegCalendarAlt  size={18} className=" text-white" />
-                            </span>
-                        }
-                        style={{
-                          flex: 1,
-                          background: 'transparent',
-                          border: 'none',
-                          boxShadow: 'none',
-                        }}
-                    />
-                </div>
-            </div> */}
-
             {/* Stat Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
                 {statCards.map((card, idx) => (
@@ -150,13 +83,16 @@ export default function Dashboard() {
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-lg font-bold text-gray-900">Revenue</h2>
                     <Select
-                        defaultValue="2025"
+                        value={selectedYear}
                         style={{ width: 100 }}
-                        className="text-sm"
-                        options={[
-                            { value: '2025', label: '2025' },
-                            { value: '2024', label: '2024' },
-                        ]}
+                        onChange={(value) => setSelectedYear(Number(value))}
+                        options={Array.from({ length: 3 }, (_, i) => {
+                            const year = currentYear - i;
+                            return {
+                                value: year,
+                                label: year.toString(),
+                            };
+                        })}
                     />
                 </div>
                 <ResponsiveContainer width="100%" height={200}>
@@ -178,14 +114,13 @@ export default function Dashboard() {
                         <Tooltip
                             content={({ active, payload, label }) => {
                                 if (active && payload && payload.length) {
-                                    let year = '2025';
                                     return (
-                                        <div className="bg-[#986EA8] bg-linear-to-r from-cyan-[#986EA8] px-3 rounded shadow text-sm text-white ">
+                                        <div className="bg-[#986EA8] px-3 rounded shadow text-sm text-white">
                                             <div>
                                                 <span className="text-lg">${payload[0].payload.earning}</span>
                                             </div>
-                                            <div className="mb-1">
-                                                {label} {year}
+                                            <div>
+                                                {label} {selectedYear}
                                             </div>
                                         </div>
                                     );
@@ -242,8 +177,9 @@ export default function Dashboard() {
                                     borderRadius: '8px',
                                 }}
                             />
-                            <Bar dataKey="2025" fill="#8979FF" />
-                            <Bar dataKey="2026" fill="#B6E2D3" />
+                              <Bar dataKey={(selectedYear-1).toString()} fill="#8979FF" />
+                              <Bar dataKey={(selectedYear).toString()} fill="#B6E2D3" />
+
                             <Legend verticalAlign="top" align="right" />
                         </BarChart>
                     </ResponsiveContainer>
@@ -252,7 +188,7 @@ export default function Dashboard() {
                 {/* Top Clubs */}
                 <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
                     <h2 className="text-lg font-bold text-gray-900 mb-6">Top Clubs</h2>
-                    <div className=" max-h-80 overflow-y-auto">
+                    <div className="max-h-80 overflow-y-auto">
                         {((topClubsData as any)?.data || [])?.map((club: any, idx: number) => (
                             <div
                                 key={idx}
