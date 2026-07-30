@@ -108,7 +108,6 @@ export default function NotificationPage() {
   const totalNotifications = notificationsData?.pagination?.total || 0;
   const totalPages = notificationsData?.pagination?.totalPage || 1;
   const currentPage = notificationsData?.pagination?.page || page;
-  const currentLimit = notificationsData?.pagination?.limit || limit;
 
   const handleChangePage = (newPage: number) => {
     setPage(newPage);

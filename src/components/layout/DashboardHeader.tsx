@@ -1,6 +1,5 @@
 import { FiBell } from 'react-icons/fi';
-import { Input, Skeleton } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { Skeleton } from 'antd';
 import getNavbatItem from '../../data/getNavbarItems';
 import { Link, useLocation } from 'react-router-dom';
 import { useProfileQuery, PROFILE_QUERY_ARG } from '../../redux/apiSlices/authSlice';
