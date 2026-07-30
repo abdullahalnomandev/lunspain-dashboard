@@ -1,148 +1,129 @@
-import React, { useState } from 'react';
-import { Table, Tag, Avatar, Space, Button } from 'antd';
-import { EyeOutlined } from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
-import TransactionModal from './TransactionModal';
-import { Transectiondata } from '../../../demo-data/transections.data';
+import { useState } from 'react';
+import { Table, Tag } from 'antd';
+import { format, formatDistanceToNow } from 'date-fns';
+import { useGetBookingClassAttendanceQuery } from '../../../redux/apiSlices/bookingClassSlice';
+import { imageUrl } from '../../../redux/api/baseApi';
 
-interface TransactionData {
-  key: string;
-  txnId: string;
-  userName: string;
-  userUsername: string;
-  userAvatar: string;
-  userEmail: string;
-  clubName: string;
-  clubAvatar: string;
-  date: string;
-  amount: string;
-  type: 'Class Payment' | 'Membership' | 'Workshop' | 'Private Lesson';
-  status: 'Completed' | 'Pending' | 'Failed';
-  paymentMethod: string;
-  description: string;
-  adminCommission: string;
-  clubEarnings: string;
-  commissionRate: string;
-}
+const TransectionsTable = () => {
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
-const TransactionsTable: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [selectedTransaction, setSelectedTransaction] = useState<TransactionData | null>(null);
+  const { data: bookingClassAttendance, isLoading } = useGetBookingClassAttendanceQuery({ page, limit: pageSize });
 
-  const handleViewDetails = (transaction: TransactionData): void => {
-    setSelectedTransaction(transaction);
-    setIsModalOpen(true);
-  };
-
-  const handleModalClose = (): void => {
-    setIsModalOpen(false);
-    setSelectedTransaction(null);
-  };
-
-  const columns: ColumnsType<TransactionData> = [
-    {
-      title: 'TXN ID',
-      dataIndex: 'txnId',
-      key: 'txnId',
-      width: 140,
-      render: (text: string) => <span className="font-mono text-sm">{text}</span>,
-    },
+  // Only include the most important fields: User, Booking ID, Class Name, Payment Status, Payment Method, Price, Created
+  const columns = [
     {
       title: 'User',
-      dataIndex: 'userName',
-      key: 'userName',
-      render: (text: string, record: TransactionData) => (
-        <div className="flex items-center space-x-3">
-          <Avatar src={record.userAvatar} size={40} />
-          <div>
-            <div className="font-medium">{text}</div>
-            <div className="text-xs text-gray-500">{record.userEmail}</div>
+      dataIndex: ['user', 'profile', 'firstName'],
+      key: 'user',
+      render: (_: any, record: any) =>
+        record.user?.profile ? (
+          <div className="flex items-center gap-2">
+            <img
+              src={
+                record.user.profile.image.startsWith('http')
+                  ? record.user.profile.image
+                  : imageUrl + record.user.profile.image
+              }
+              alt="user"
+              className="w-8 h-8 rounded-full"
+            />
+            <span>
+              {record.user.profile.firstName} {record.user.profile.lastName}
+            </span>
           </div>
-        </div>
+        ) : (
+          '-'
+        ),
+    },
+    {
+      title: 'Booking ID',
+      dataIndex: 'booking_id',
+      key: 'booking_id',
+    },
+    {
+      title: 'Class Name',
+      dataIndex: ['class', 'class_name'],
+      key: 'class_name',
+      render: (_: any, record: any) =>
+        record.class && record.class.class_name ? record.class.class_name : '-',
+    },
+    {
+      title: 'Payment Status',
+      dataIndex: 'payment_status',
+      key: 'payment_status',
+      render: (status: string) => (
+        <Tag
+          color={status === 'paid' ? 'green' : 'orange'}
+          style={{ minWidth: 70, textAlign: 'center' }}
+        >
+          {status?.toUpperCase()}
+        </Tag>
       ),
     },
     {
-      title: 'Club',
-      dataIndex: 'clubName',
-      key: 'clubName',
-      render: (text: string, record: TransactionData) => (
-        <div className="flex items-center space-x-2">
-          <Avatar src={record.clubAvatar} size={32} />
-          <span className="font-medium">{text}</span>
-        </div>
-      ),
+      title: 'Payment Method',
+      dataIndex: 'payment_method',
+      key: 'payment_method',
+      render: (method: string) => (method ? method.toUpperCase() : '-'),
     },
     {
-      title: 'Amount',
-      dataIndex: 'amount',
-      key: 'amount',
-      render: (text: string) => <span className="font-semibold">{text}</span>,
+      title: 'Price',
+      dataIndex: 'price_of_class',
+      key: 'price_of_class',
+      render: (price: number) => (price ? `$${price}` : '-'),
     },
     {
-      title: 'Date',
-      dataIndex: 'date',
-      key: 'date',
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string) => {
-        const colors: { [key: string]: string } = {
-          Completed: 'success',
-          Pending: 'warning',
-          Failed: 'error',
-        };
-        return <Tag color={colors[status]}>{status}</Tag>;
-      },
-    },
-    {
-      title: 'Action',
-      key: 'action',
-      width: 120,
-      render: (_: any, record: TransactionData) => (
-        <Space>
-          <Button 
-            type="primary"
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => handleViewDetails(record)}
-          >
-            Details
-          </Button>
-        </Space>
-      ),
+      title: 'Created',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (date: string) =>
+        date ? (
+          <div>
+            <div>{format(new Date(date), 'dd MMM yyyy')}</div>
+            <small className="text-gray-500">
+              {formatDistanceToNow(new Date(date), { addSuffix: true })}
+            </small>
+          </div>
+        ) : (
+          '-'
+        ),
     },
   ];
 
-
-
   return (
-    <div className=" bg-gray-50">
-
-
-      <div className="bg-white rounded-lg shadow">
-        <div className="w-full overflow-x-auto">
-          <Table 
-            columns={columns as any} 
-            dataSource={Transectiondata} 
-            pagination={{
-              pageSize: 10,
-              showSizeChanger: true,
-            }}
-            scroll={{ x: 'max-content' }}
-          />
-        </div>
+    <div className="bg-gray-50">
+      <div className="mb-4 flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Booking Class Transactions</h2>
       </div>
-
-      <TransactionModal
-      handleModalClose={handleModalClose}
-      isModalOpen={isModalOpen}
-      selectedTransaction={selectedTransaction}
-      />
-
+      <div
+        className="bg-white rounded-lg shadow"
+        style={{
+          overflow: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <Table
+          rowKey="_id"
+          loading={isLoading}
+          columns={columns}
+          dataSource={bookingClassAttendance?.data || []}
+          pagination={{
+            current: bookingClassAttendance?.pagination?.page || page,
+            pageSize: bookingClassAttendance?.pagination?.limit || pageSize,
+            total: bookingClassAttendance?.pagination?.total || 0,
+            showSizeChanger: false,
+            onChange: (newPage) => setPage(newPage),
+          }}
+          scroll={{
+            x: 'max-content',
+            y: 'calc(100vh - 280px)',
+          }}
+        />
+      </div>
     </div>
   );
 };
 
-export default TransactionsTable;
+export default TransectionsTable;

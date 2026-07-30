@@ -16,7 +16,7 @@ export const api = createApi({
         },
     }),
 
-    tagTypes: ['Facility', 'Package', 'Review', 'Tag', 'Coupon', 'AboutSettings', 'PrivacyPolicySettings', 'TermsOfServiceSettings', 'DisclaimerSettings', 'Profile'],
+    tagTypes: ['Facility', 'Package', 'Review', 'Tag', 'Coupon', 'AboutSettings', 'PrivacyPolicySettings', 'TermsOfServiceSettings', 'DisclaimerSettings', 'Profile', 'Notification'],
     endpoints: () => ({}),
 });
 
