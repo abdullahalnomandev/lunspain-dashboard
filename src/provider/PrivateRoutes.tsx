@@ -6,6 +6,7 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 
     const { data: profile, isLoading, isError } = useProfileQuery(undefined);
 
+    console.log(profile);
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-screen">

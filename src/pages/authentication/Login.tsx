@@ -14,9 +14,10 @@ const Login = () => {
             // Save token
             if (response?.data?.accessToken) {
                 localStorage.setItem('token', response.data.accessToken);
-                navigate('/');
                 message.success('Login successful!');
-                navigate('/');
+                window.location.href = '/';
+                // navigate('/');
+                // navigate('/', { replace: true });
             } else {
                 message.error('Login failed. Please try again.');
             }
